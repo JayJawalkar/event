@@ -33,10 +33,13 @@ class _AddEventState extends State<AddEvent> {
           .single();
       return event;
     } catch (e) {
-
       return {}; // Return empty map if error occurs
     }
   }
+
+  List<dynamic> colorSelection = [
+    Colors.red,
+  ];
 
   List<Map<String, dynamic>> eventsList = [];
 
@@ -122,11 +125,15 @@ class _AddEventState extends State<AddEvent> {
                     ButtonText(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => BookNowLanding()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookNowLanding(),
+                          ),
+                        );
                       },
                     )
+                  
+                    
                   ],
                 ),
               ),

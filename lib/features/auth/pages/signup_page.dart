@@ -4,7 +4,6 @@ import 'package:event/core/image/image.dart';
 import 'package:event/features/auth/pages/login_page.dart';
 import 'package:event/features/auth/widgets/text_field_explicit.dart';
 import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignupPage extends StatefulWidget {
@@ -20,7 +19,7 @@ class _SignupPageState extends State<SignupPage> {
   final nameController = TextEditingController();
 
   final SupabaseClient supabase = Supabase.instance.client;
-  String id = randomAlphaNumeric(10);
+  
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
@@ -115,66 +114,80 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 onPressed: () async {
                   try {
-                    await supabase.auth
-                        .signUp(
+                    // Validate inputs before proceeding
+                    String? nameError = validateName(nameController.text);
+                    String? emailError = validateEmail(emailController.text);
+                    String? passwordError = validatePassword(passwordController.text);
+                    
+                    if (nameError != null || emailError != null || passwordError != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(nameError ?? emailError ?? passwordError ?? 'Validation error'),
+                        ),
+                      );
+                      return;
+                    }
+                    
+                    // First sign up the user with Supabase Auth
+                    final authResponse = await supabase.auth.signUp(
                       password: passwordController.text.trim(),
                       email: emailController.text.trim(),
-                    )
-                        .then((response) async {
-                      if (response.user != null) {
-                        // Insert user data into the database
-                        try {
-                          await supabase.from('users').insert({
-                            'id': id,
-                            'name': nameController.text.trim(),
-                            'email': emailController.text.trim(),
-                            'password': passwordController.text.trim(),
-                          });
+                    );
+                    
+                    // Check if we have a user from the authentication
+                    if (authResponse.user != null) {
+                      // Get the UUID that Supabase Auth generated
+                      final userId = authResponse.user!.id;
+                      
+                      print("Authenticated user ID: $userId"); // Debug print
+                      
+                      // Insert user data into the database using the auth-generated UUID
+                      try {
+                        await supabase.from('users').insert({
+                          'id': userId, // Use the Supabase Auth UUID
+                          'name': nameController.text.trim(),
+                          'email': emailController.text.trim(),
+                          // Don't store the password in your database table - it's already securely stored by Supabase Auth
+                        });
 
-                          // Show success message
+                        print("User profile created with ID: $userId"); // Debug print
+
+                        // Show success message
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Account created successfully! Please login.'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+
+                          // Wait for SnackBar to be visible before navigation
+                          await Future.delayed(const Duration(seconds: 2));
+
+                          // Sign out the user since we want them to log in explicitly
+                          await supabase.auth.signOut();
+
+                          // Navigate to login page
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Account created successfully! Please login.'),
-                                duration: Duration(seconds: 2),
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
                               ),
-                            );
-
-                            // Wait for SnackBar to be visible before navigation
-                            await Future.delayed(const Duration(seconds: 2));
-
-                            // Navigate to login page
-                            if (mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LoginPage(),
-                                ),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Error saving user data: ${e.toString()}')),
                             );
                           }
                         }
+                      } catch (e) {
+                        print("Error saving user data: $e"); // Debug print
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error saving user data: ${e.toString()}')),
+                          );
+                        }
                       }
-                    }).onError((error, stackTrace) {
-                      // Handle auth errors
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  'Authentication error: ${error.toString()}')),
-                        );
-                      }
-                    });
+                    }
                   } catch (e1) {
+                    print("General error: $e1"); // Debug print
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error: ${e1.toString()}')),
@@ -183,7 +196,7 @@ class _SignupPageState extends State<SignupPage> {
                   }
                 },
                 child: Text(
-                  '   Sign In   ',
+                  'Sign Up',  // Changed from "Sign In" to "Sign Up" for clarity
                   style: TextStyle(
                     fontSize: 25,
                   ),
@@ -197,8 +210,8 @@ class _SignupPageState extends State<SignupPage> {
                   'Already have an Account?',
                   style: TextStyle(fontSize: 18),
                 ),
-                InkWell(
-                  onTap: () {
+                TextButton(
+                  onPressed: () {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -207,7 +220,7 @@ class _SignupPageState extends State<SignupPage> {
                     );
                   },
                   child: Text(
-                    'LogIn',
+                    'Login',
                     style: TextStyle(fontSize: 18),
                   ),
                 ),

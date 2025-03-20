@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event/core/constants/image_constants.dart';
 import 'package:event/core/image/image.dart';
 import 'package:event/features/auth/pages/signup_page.dart';
@@ -21,6 +22,34 @@ class _LoginPageState extends State<LoginPage> {
   String? _errorMessage;
 
   final SupabaseClient _supabase = Supabase.instance.client;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  // Check if user is already logged in
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final userId = prefs.getString('userId');
+    
+    if (isLoggedIn && userId != null && mounted) {
+      // User is already logged in, navigate to home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+      );
+    }
+  }
+
+  // Save login status to SharedPreferences
+  Future<void> _saveLoginStatus(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('userId', userId);
+  }
 
   @override
   void dispose() {
@@ -63,6 +92,9 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.user != null && mounted) {
+        // Store login session
+        await _saveLoginStatus(response.user!.id);
+        
         _emailController.clear();
         _passwordController.clear();
         

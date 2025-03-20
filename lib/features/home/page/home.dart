@@ -27,10 +27,21 @@ class _HomeState extends State<Home> {
   }
 
   final SupabaseClient supabase = Supabase.instance.client;
-Future<List> data() async {
-  final res = await supabase.from('events').select('id, name, description, date, genere');
-  return res;
-}
+  Future<List> data() async {
+    final res = await supabase
+        .from('events')
+        .select('id, name, description, date, genere, color');
+    return res;
+  }
+
+  Color hexToColor(String hex) {
+    hex = hex.replaceFirst('#', ''); // Remove '#' if present
+    if (hex.length == 6) {
+      hex = "FF$hex"; // Add alpha value if missing
+    }
+    return Color(int.parse(hex, radix: 16));
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -165,73 +176,80 @@ Future<List> data() async {
         ),
         Expanded(
           child: FutureBuilder(
-              future: data(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator()); // Show loading
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Text("Error: ${snapshot.error}")); // Show error
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                      child: Text("No events found!"),); // Handle empty data
-                }
+            future: data(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                    child: CircularProgressIndicator()); // Show loading
+              }
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text("Error: ${snapshot.error}")); // Show error
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text("No events found!"),
+                ); // Handle empty data
+              }
 
-                // Extract list of event names
-                List events = snapshot.data!;
-                return ListView.builder(
-                    itemCount: events.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.all(15),
-                        padding: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: const Color.fromRGBO(255, 199, 0, 1),
+              // Extract list of event names
+              List events = snapshot.data!;
+              return ListView.builder(
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  String eventColor = events[index]['color'] ??
+                      '#FFC700'; // Default color if null
+
+                  return Container(
+                    margin: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: hexToColor(eventColor), // Apply dynamic color
+                    ),
+                    child: Row(
+                      children: [
+                        ImageSvg(
+                          path: ImageConstants.codeBanner,
+                          height: height,
+                          width: width,
                         ),
-                        child: Row(
-                          children: [
-                            ImageSvg(
-                              path: ImageConstants.codeBanner,
-                              height: height,
-                              width: width,
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    events[index]['name'],
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 3,
-                                  ),
-                                  ElevatedButton.icon(
-                                        onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddEvent(eventId: events[index]['id']),
-      ),
-    );
-  },
-  label: const Text("Participate"),
-  icon: const Icon(Icons.join_right_sharp),
-),
-                                ],
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                events[index]['name'],
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                softWrap: true,
+                                maxLines: 3,
                               ),
-                            ),
-                          ],
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddEvent(
+                                          eventId: events[index]['id']),
+                                    ),
+                                  );
+                                },
+                                label: const Text("Participate"),
+                                icon: const Icon(Icons.join_right_sharp),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    },);
-              },),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
