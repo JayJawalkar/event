@@ -17,46 +17,7 @@ class _SignupPageState extends State<SignupPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
-
   final SupabaseClient supabase = Supabase.instance.client;
-  
-  String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email is required';
-    }
-    // Basic email validation pattern
-    final emailPattern = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailPattern.hasMatch(value)) {
-      return 'Please enter a valid email';
-    }
-    return null;
-  }
-
-  String? validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Password is required';
-    }
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!value.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!value.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least one number';
-    }
-    return null;
-  }
-
-  String? validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Name is required';
-    }
-    if (value.length < 2) {
-      return 'Name must be at least 2 characters';
-    }
-    return null;
-  }
 
   @override
   void dispose() {
@@ -69,164 +30,96 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          spacing: 20,
-          children: [
-            SizedBox(
-              height: 100,
-            ),
-            ImageSvg(
-              height: 200,
-              width: 200,
-              path: ImageConstants.signUp,
-            ),
-            TextFieldExplicit(
-              validator: validateName,
-              textInputType: TextInputType.name,
-              obscureText: false,
-              labelText: 'Enter Name',
-              controller: nameController,
-            ),
-            TextFieldExplicit(
-              validator: validateEmail,
-              textInputType: TextInputType.emailAddress,
-              obscureText: false,
-              labelText: 'Enter Email',
-              controller: emailController,
-            ),
-            TextFieldExplicit(
-              validator: validatePassword,
-              textInputType: TextInputType.visiblePassword,
-              obscureText: true,
-              labelText: 'Enter Password',
-              controller: passwordController,
-            ),
-            Container(
-              margin: EdgeInsets.all(10),
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: Size(double.maxFinite, 60),
-                  elevation: 1.5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                onPressed: () async {
-                  try {
-                    // Validate inputs before proceeding
-                    String? nameError = validateName(nameController.text);
-                    String? emailError = validateEmail(emailController.text);
-                    String? passwordError = validatePassword(passwordController.text);
-                    
-                    if (nameError != null || emailError != null || passwordError != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(nameError ?? emailError ?? passwordError ?? 'Validation error'),
-                        ),
-                      );
-                      return;
-                    }
-                    
-                    // First sign up the user with Supabase Auth
-                    final authResponse = await supabase.auth.signUp(
-                      password: passwordController.text.trim(),
-                      email: emailController.text.trim(),
-                    );
-                    
-                    // Check if we have a user from the authentication
-                    if (authResponse.user != null) {
-                      // Get the UUID that Supabase Auth generated
-                      final userId = authResponse.user!.id;
-                      
-                      print("Authenticated user ID: $userId"); // Debug print
-                      
-                      // Insert user data into the database using the auth-generated UUID
-                      try {
-                        await supabase.from('users').insert({
-                          'id': userId, // Use the Supabase Auth UUID
-                          'name': nameController.text.trim(),
-                          'email': emailController.text.trim(),
-                          // Don't store the password in your database table - it's already securely stored by Supabase Auth
-                        });
-
-                        print("User profile created with ID: $userId"); // Debug print
-
-                        // Show success message
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Account created successfully! Please login.'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-
-                          // Wait for SnackBar to be visible before navigation
-                          await Future.delayed(const Duration(seconds: 2));
-
-                          // Sign out the user since we want them to log in explicitly
-                          await supabase.auth.signOut();
-
-                          // Navigate to login page
-                          if (mounted) {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        print("Error saving user data: $e"); // Debug print
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error saving user data: ${e.toString()}')),
-                          );
-                        }
-                      }
-                    }
-                  } catch (e1) {
-                    print("General error: $e1"); // Debug print
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ${e1.toString()}')),
-                      );
-                    }
-                  }
-                },
-                child: Text(
-                  'Sign Up',  // Changed from "Sign In" to "Sign Up" for clarity
-                  style: TextStyle(
-                    fontSize: 25,
-                  ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50),
+              ImageSvg(
+                height: 150,
+                width: 150,
+                path: ImageConstants.signUp,
+              ),
+              const SizedBox(height: 30),
+              Text(
+                'Create an Account',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Already have an Account?',
-                  style: TextStyle(fontSize: 18),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginPage(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Login',
-                    style: TextStyle(fontSize: 18),
+              const SizedBox(height: 20),
+              TextFieldExplicit(
+                labelText: 'Full Name',
+                controller: nameController,
+                textInputType: TextInputType.name,
+                obscureText: false,
+              ),
+              const SizedBox(height: 15),
+              TextFieldExplicit(
+                labelText: 'Email Address',
+                controller: emailController,
+                textInputType: TextInputType.emailAddress,
+                obscureText: false,
+              ),
+              const SizedBox(height: 15),
+              TextFieldExplicit(
+                labelText: 'Password',
+                controller: passwordController,
+                textInputType: TextInputType.visiblePassword,
+                obscureText: true,
+              ),
+              const SizedBox(height: 25),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
-              ],
-            )
-          ],
+                onPressed: () async {
+                  // Sign up logic
+                },
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Already have an account?",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
+                      );
+                    },
+                    child: Text(
+                      'Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

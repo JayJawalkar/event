@@ -30,7 +30,7 @@ class _HomeState extends State<Home> {
   Future<List> data() async {
     final res = await supabase
         .from('events')
-        .select('id, name, description, date, genere, color');
+        .select('id, name, description, date, genre, color');
     return res;
   }
 

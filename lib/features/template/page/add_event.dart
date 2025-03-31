@@ -28,7 +28,7 @@ class _AddEventState extends State<AddEvent> {
     try {
       final event = await supabase
           .from('events')
-          .select('name, description, date, genere')
+          .select('name, description, date, genre')
           .eq('id', widget.eventId)
           .single();
       return event;

@@ -27,7 +27,10 @@ class _BookNowLandingState extends State<BookNowLanding> {
                   backgroundColor: Colors.white,
                   side: BorderSide(color: Colors.white),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  ///add te event to notification page and do add countdown 
+                
+                },
                 child: Text('Coming UP soon'),
               ),
             ),
