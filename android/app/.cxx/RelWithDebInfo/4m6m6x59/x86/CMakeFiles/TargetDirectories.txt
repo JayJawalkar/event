@@ -1,0 +1,2 @@
+D:/Jay Jawalkar/event/android/app/.cxx/RelWithDebInfo/4m6m6x59/x86/CMakeFiles/edit_cache.dir
+D:/Jay Jawalkar/event/android/app/.cxx/RelWithDebInfo/4m6m6x59/x86/CMakeFiles/rebuild_cache.dir

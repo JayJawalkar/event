@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class NotificationScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> events;
-
-  const NotificationScreen({super.key, required this.events});
+  const NotificationScreen({
+    super.key,
+  });
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
@@ -53,61 +53,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upcoming Events'),
-        centerTitle: true,
-      ),
-      body: widget.events.isEmpty
-          ? const Center(
-              child: Text(
-                'No upcoming events',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              itemCount: widget.events.length,
-              itemBuilder: (context, index) {
-                final event = widget.events[index];
-                final dueDate = event['dueDate'] as DateTime;
-
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          event['name'],
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Due: ${_dateFormat.format(dueDate)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Time remaining: ${_getTimeRemaining(dueDate)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
+        appBar: AppBar(
+          title: const Text('Upcoming Events'),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Text(
+            'No upcoming events',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ));
   }
 }

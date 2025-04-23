@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -44,7 +45,9 @@ class _ProfileState extends State<Profile> {
           .eq('id', currentUser.id)
           .maybeSingle();
 
-      print("Supabase response: $response"); // Debug print
+      if (kDebugMode) {
+        print("Supabase response: $response");
+      } // Debug print
 
       if (mounted) {
         setState(() {
@@ -60,7 +63,9 @@ class _ProfileState extends State<Profile> {
         });
       }
     } catch (e) {
-      print("Error fetching user data: $e"); // Debug print
+      if (kDebugMode) {
+        print("Error fetching user data: $e");
+      } // Debug print
       if (mounted) {
         setState(() {
           _errorMessage = "Failed to load data: $e";
@@ -97,7 +102,9 @@ class _ProfileState extends State<Profile> {
       // Fetch the newly created profile
       await fetchUserData();
     } catch (e) {
-      print("Error creating user profile: $e");
+      if (kDebugMode) {
+        print("Error creating user profile: $e");
+      }
       if (mounted) {
         setState(() {
           _errorMessage = "Failed to create profile: $e";

@@ -1,4 +1,4 @@
-import 'package:event/features/auth/pages/signup_page.dart';
+import 'package:event/features/auth/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: SignupPage(),
+      home: LoginPage(),
     );
   }
 }

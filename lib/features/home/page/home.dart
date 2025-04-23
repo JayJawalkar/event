@@ -2,6 +2,7 @@ import 'package:event/core/constants/image_constants.dart';
 import 'package:event/core/image/image.dart';
 import 'package:event/features/add/page/add_new_event.dart';
 import 'package:event/features/fav/page/fav.dart';
+import 'package:event/features/notification/views/notificcation_screen.dart';
 import 'package:event/features/profile/page/profile.dart';
 import 'package:event/features/search/page/search.dart';
 import 'package:event/features/template/page/add_event.dart';
@@ -30,7 +31,7 @@ class _HomeState extends State<Home> {
   Future<List> data() async {
     final res = await supabase
         .from('events')
-        .select('id, name, description, date, genre, color');
+        .select('id, name, description, date, genre, color,datetime,time');
     return res;
   }
 
@@ -54,21 +55,7 @@ class _HomeState extends State<Home> {
       appBar: _selectedIndex == 0
           ? AppBar(
               backgroundColor: const Color.fromRGBO(28, 88, 242, 1),
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 12.0),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Icon(
-                        size: 30,
-                        Icons.stacked_bar_chart_sharp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              leading: Container(),
               title: Center(
                 child: Column(
                   children: [
@@ -100,7 +87,12 @@ class _HomeState extends State<Home> {
               ),
               actions: [
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NotificationScreen()));
+                  },
                   child: const Icon(
                     Icons.notifications,
                     color: Colors.white,
